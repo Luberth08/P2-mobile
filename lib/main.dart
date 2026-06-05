@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Asistencia Vehicular',
       debugShowCheckedModeBanner: false, // Quitar banner de debug
+      navigatorKey: NotificationService.navigatorKey, // Agregar navigatorKey para notificaciones
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: const ColorScheme.light(

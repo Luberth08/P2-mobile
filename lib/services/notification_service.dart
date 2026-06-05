@@ -2,12 +2,15 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'session.dart';
 
 class NotificationService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   static const String baseUrl = 'https://backend-repo-2ncr.onrender.com/api/v1';
+  static final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   /// Inicializa Firebase y configura las notificaciones
   static Future<void> initialize() async {
@@ -17,6 +20,9 @@ class NotificationService {
       // Inicializar Firebase
       await Firebase.initializeApp();
       print('✅ Firebase inicializado correctamente');
+
+      // Inicializar notificaciones locales
+      await _initializeLocalNotifications();
 
       // Solicitar permisos de notificación
       NotificationSettings settings = await _firebaseMessaging.requestPermission(
@@ -55,6 +61,29 @@ class NotificationService {
     } catch (e) {
       print('💥 Error inicializando Firebase: $e');
     }
+  }
+
+  /// Inicializa las notificaciones locales
+  static Future<void> _initializeLocalNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings();
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+    );
+
+    await _localNotifications.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        _handleNotificationTap(response.payload);
+      },
+    );
+
+    print('✅ Notificaciones locales inicializadas');
   }
 
   /// Registra el token FCM en el backend
@@ -143,12 +172,53 @@ class NotificationService {
 
   /// Maneja mensajes recibidos en primer plano
   static void _handleMessage(RemoteMessage message) {
-    // Mostrar notificación local o snackbar
     if (message.notification != null) {
-      // Aquí puedes mostrar un SnackBar o dialog personalizado
-      print('Título: ${message.notification!.title}');
-      print('Cuerpo: ${message.notification!.body}');
+      final title = message.notification!.title ?? 'Nueva notificación';
+      final body = message.notification!.body ?? '';
+      
+      print('📬 Mensaje en primer plano: $title - $body');
+      
+      // Mostrar notificación local
+      _showLocalNotification(
+        title,
+        body,
+        message.data,
+      );
     }
+  }
+
+  /// Muestra una notificación local
+  static Future<void> _showLocalNotification(
+    String title,
+    String body,
+    Map<String, dynamic>? data,
+  ) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'asistencia_vehicular_channel',
+      'Asistencia Vehicular',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+        DarwinNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+    );
+
+    final payload = data != null ? jsonEncode(data) : null;
+
+    await _localNotifications.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: payload,
+    );
   }
 
   /// Maneja cuando el usuario toca una notificación
@@ -161,45 +231,78 @@ class NotificationService {
 
     // Navegar según el tipo de notificación
     switch (accion) {
-      case 'abrir_servicio_detalle':
-        final servicioId = data['servicio_id'];
-        if (servicioId != null) {
-          // Navegar a la pantalla de detalle del servicio
-          _navigateToServiceDetail(servicioId);
+      case 'abrir_solicitud_detalle':
+        final solicitudId = data['solicitud_id'];
+        if (solicitudId != null) {
+          _navigateToServiceDetail(solicitudId);
         }
         break;
       case 'abrir_valoracion':
         final servicioId = data['servicio_id'];
         if (servicioId != null) {
-          // Navegar a la pantalla de valoración
           _navigateToRating(servicioId);
         }
         break;
       default:
-        // Navegar a la pantalla principal
         _navigateToHome();
+    }
+  }
+
+  /// Maneja cuando el usuario toca una notificación local
+  static void _handleNotificationTap(String? payload) {
+    if (payload == null) {
+      _navigateToHome();
+      return;
+    }
+
+    try {
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      final tipo = data['tipo'];
+      final accion = data['accion'];
+
+      print('Notificación local tocada - Tipo: $tipo, Acción: $accion');
+
+      switch (accion) {
+        case 'abrir_solicitud_detalle':
+          final solicitudId = data['solicitud_id'];
+          if (solicitudId != null) {
+            _navigateToServiceDetail(solicitudId);
+          }
+          break;
+        case 'abrir_valoracion':
+          final servicioId = data['servicio_id'];
+          if (servicioId != null) {
+            _navigateToRating(servicioId);
+          }
+          break;
+        default:
+          _navigateToHome();
+      }
+    } catch (e) {
+      print('Error parsing notification payload: $e');
+      _navigateToHome();
     }
   }
 
   /// Navega al detalle del servicio
   static void _navigateToServiceDetail(String servicioId) {
-    // Implementar navegación al detalle del servicio
-    print('Navegando al servicio: $servicioId');
-    // Navigator.pushNamed(context, '/servicio-detalle', arguments: servicioId);
+    print('🧭 Navegando al servicio: $servicioId');
+    navigatorKey.currentState?.pushNamed('/home');
   }
 
   /// Navega a la pantalla de valoración
   static void _navigateToRating(String servicioId) {
-    // Implementar navegación a valoración
-    print('Navegando a valoración del servicio: $servicioId');
-    // Navigator.pushNamed(context, '/valoracion', arguments: servicioId);
+    print('🧭 Navegando a valoración del servicio: $servicioId');
+    navigatorKey.currentState?.pushNamed('/home');
   }
 
   /// Navega a la pantalla principal
   static void _navigateToHome() {
-    // Implementar navegación al home
-    print('Navegando al home');
-    // Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    print('🧭 Navegando al home');
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/home',
+      (route) => false,
+    );
   }
 
   /// Envía una notificación de prueba
@@ -241,5 +344,55 @@ class NotificationService {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print('Mensaje en segundo plano: ${message.notification?.title}');
+  
+  print('📬 Mensaje en segundo plano: ${message.notification?.title}');
+  
+  // Inicializar notificaciones locales
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const DarwinInitializationSettings initializationSettingsDarwin =
+      DarwinInitializationSettings();
+
+  const InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsDarwin,
+  );
+
+  final FlutterLocalNotificationsPlugin localNotifications =
+      FlutterLocalNotificationsPlugin();
+
+  await localNotifications.initialize(initializationSettings);
+
+  // Mostrar notificación local
+  if (message.notification != null) {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'asistencia_vehicular_channel',
+      'Asistencia Vehicular',
+      importance: Importance.max,
+      priority: Priority.high,
+      showWhen: true,
+    );
+
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+        DarwinNotificationDetails();
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics,
+    );
+
+    final title = message.notification!.title ?? 'Nueva notificación';
+    final body = message.notification!.body ?? '';
+    final payload = jsonEncode(message.data);
+
+    await localNotifications.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: payload,
+    );
+  }
 }

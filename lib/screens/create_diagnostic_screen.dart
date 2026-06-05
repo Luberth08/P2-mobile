@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:geolocator/geolocator.dart';
@@ -275,6 +276,17 @@ class _CreateDiagnosticScreenState extends State<CreateDiagnosticScreen> {
   }
 
   Future<void> _startRecording() async {
+    // En web, la grabación de audio no está completamente soportada
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La grabación de audio no está disponible en la versión web'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     try {
       // Verificar permisos
       final status = await Permission.microphone.request();
@@ -845,12 +857,27 @@ class _CreateDiagnosticScreenState extends State<CreateDiagnosticScreen> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.file(
-                            entry.value,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
+                          child: kIsWeb
+                              ? Image.network(
+                                  entry.value.path,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 100,
+                                      height: 100,
+                                      color: Colors.grey[300],
+                                      child: const Icon(Icons.image),
+                                    );
+                                  },
+                                )
+                              : Image.file(
+                                  entry.value,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                         Positioned(
                           top: 4,

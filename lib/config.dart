@@ -6,7 +6,8 @@
 
 const String kApiBaseUrl = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'https://backend-repo-2ncr.onrender.com/api/v1/',
+   defaultValue: 'http://localhost:8000/api/v1/'
+//  defaultValue: 'https://backend-repo-2ncr.onrender.com/api/v1/',
 );
 
 // Helper note:

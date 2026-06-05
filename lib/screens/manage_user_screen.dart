@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/session.dart';
@@ -320,10 +321,22 @@ class _ManageUserScreenState extends State<ManageUserScreen> {
                       ),
                       child: ClipOval(
                         child: _imageFile != null
-                            ? Image.file(
-                                _imageFile!,
-                                fit: BoxFit.cover,
-                              )
+                            ? kIsWeb
+                                ? Image.network(
+                                    _imageFile!.path,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Color(0xFF932D30),
+                                      );
+                                    },
+                                  )
+                                : Image.file(
+                                    _imageFile!,
+                                    fit: BoxFit.cover,
+                                  )
                             : _currentPhotoUrl != null
                                 ? Image.network(
                                     _currentPhotoUrl!,

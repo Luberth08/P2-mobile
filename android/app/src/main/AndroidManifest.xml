@@ -23,7 +23,7 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     
     <application
-        android:label="mobile_repo"
+        android:label="Asistencia Vehicular"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"

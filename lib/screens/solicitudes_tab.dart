@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/session.dart';
 import '../services/diagnostic_api.dart';
+import '../services/websocket_events_service.dart';
 import 'diagnostic_result_screen.dart';
 
 class SolicitudesTab extends StatefulWidget {
@@ -13,11 +15,41 @@ class SolicitudesTab extends StatefulWidget {
 class _SolicitudesTabState extends State<SolicitudesTab> {
   List<Map<String, dynamic>> _solicitudes = [];
   bool _loading = true;
+  StreamSubscription? _solicitudAceptadaSubscription;
+  StreamSubscription? _solicitudRechazadaSubscription;
+  
+  final _wsEventsService = WebSocketEventsService();
 
   @override
   void initState() {
     super.initState();
     _loadSolicitudes();
+    _setupWebSocketListeners();
+  }
+
+  @override
+  void dispose() {
+    _solicitudAceptadaSubscription?.cancel();
+    _solicitudRechazadaSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _setupWebSocketListeners() {
+    // Escuchar cuando el taller acepta una solicitud
+    _solicitudAceptadaSubscription = _wsEventsService.solicitudAceptada.listen((event) {
+      print('🎉 Solicitud aceptada recibida en solicitudes tab: ${event.solicitudId}');
+      if (mounted) {
+        _loadSolicitudes();
+      }
+    });
+
+    // Escuchar cuando el taller rechaza una solicitud
+    _solicitudRechazadaSubscription = _wsEventsService.solicitudRechazada.listen((event) {
+      print('❌ Solicitud rechazada recibida en solicitudes tab: ${event.solicitudId}');
+      if (mounted) {
+        _loadSolicitudes();
+      }
+    });
   }
 
   Future<void> _loadSolicitudes() async {

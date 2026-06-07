@@ -3,6 +3,7 @@ import '../services/session.dart';
 import '../services/auth_api.dart';
 import '../services/user_service.dart';
 import '../services/notification_service.dart';
+import '../services/websocket_service.dart';
 import 'profile_tab.dart';
 import 'create_diagnostic_screen.dart';
 import 'servicios_tab.dart';
@@ -25,6 +26,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   List<String> _tabTitles = [];
   List<Widget> _tabs = [];
   List<Widget> _tabViews = [];
+  
+  final _wsService = WebSocketService();
 
   @override
   void initState() {
@@ -35,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   void dispose() {
     _tabController.dispose();
+    _wsService.dispose();
     super.dispose();
   }
 
@@ -53,6 +57,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           _configurarTabs();
           _verificandoRol = false;
         });
+        
+        // Conectar WebSocket cuando el usuario está autenticado
+        _wsService.connect();
         
         print('🔍 DEBUG - Estado actualizado. _esTecnico: $_esTecnico');
         print('🔍 DEBUG - Número de tabs: ${_tabs.length}');
@@ -155,10 +162,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         await NotificationService.unregisterToken();
         await AuthApi.logout(token);
       }
+      // Desconectar WebSocket
+      _wsService.disconnect();
       await Session.clearToken();
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } catch (e) {
       // Incluso si falla el logout en el servidor, limpiamos la sesión local
+      _wsService.disconnect();
       await Session.clearToken();
       Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } finally {

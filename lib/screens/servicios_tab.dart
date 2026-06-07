@@ -4,6 +4,7 @@ import '../services/session.dart';
 import '../services/diagnostic_api.dart';
 import '../services/servicio_api.dart';
 import '../services/cliente_api.dart';
+import '../services/websocket_events_service.dart';
 import '../models/servicio.dart';
 import '../widgets/valoracion_dialog.dart';
 import 'diagnostic_result_screen.dart';
@@ -19,6 +20,12 @@ class ServiciosTab extends StatefulWidget {
 class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   Timer? _refreshTimer;
+  StreamSubscription? _solicitudAceptadaSubscription;
+  StreamSubscription? _solicitudRechazadaSubscription;
+  StreamSubscription? _servicioEstadoCambiadoSubscription;
+  StreamSubscription? _servicioFinalizadoSubscription;
+  
+  final _wsEventsService = WebSocketEventsService();
   
   // Servicio actual
   ServicioCliente? _servicioActual;
@@ -38,6 +45,7 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addObserver(this);
     _loadAllData();
+    _setupWebSocketListeners();
     
     // Configurar refresh automático cada 30 segundos para servicios activos
     _refreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
@@ -51,6 +59,10 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
   void dispose() {
     _tabController.dispose();
     _refreshTimer?.cancel();
+    _solicitudAceptadaSubscription?.cancel();
+    _solicitudRechazadaSubscription?.cancel();
+    _servicioEstadoCambiadoSubscription?.cancel();
+    _servicioFinalizadoSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -62,6 +74,42 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
       // Refresh when app comes back to foreground
       _loadServicioActual();
     }
+  }
+
+  void _setupWebSocketListeners() {
+    // Escuchar cuando el taller acepta una solicitud
+    _solicitudAceptadaSubscription = _wsEventsService.solicitudAceptada.listen((event) {
+      print('🎉 Solicitud aceptada recibida: ${event.solicitudId}');
+      if (mounted) {
+        _loadServicioActual();
+        _loadSolicitudes();
+      }
+    });
+
+    // Escuchar cuando el taller rechaza una solicitud
+    _solicitudRechazadaSubscription = _wsEventsService.solicitudRechazada.listen((event) {
+      print('❌ Solicitud rechazada recibida: ${event.solicitudId}');
+      if (mounted) {
+        _loadSolicitudes();
+      }
+    });
+
+    // Escuchar cuando cambia el estado del servicio
+    _servicioEstadoCambiadoSubscription = _wsEventsService.servicioEstadoCambiado.listen((event) {
+      print('🔄 Estado de servicio cambiado: ${event.servicioId} -> ${event.estadoNuevo}');
+      if (mounted) {
+        _loadServicioActual();
+      }
+    });
+
+    // Escuchar cuando el servicio se finaliza
+    _servicioFinalizadoSubscription = _wsEventsService.servicioFinalizado.listen((event) {
+      print('✅ Servicio finalizado: ${event.servicioId}');
+      if (mounted) {
+        _loadServicioActual();
+        _loadHistorial();
+      }
+    });
   }
 
   Future<void> _loadAllData() async {

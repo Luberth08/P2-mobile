@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/servicio.dart';
+import '../config.dart';
 
 class ServicioApi {
-  static const String baseUrl = 'https://backend-repo-2ncr.onrender.com/api/v1';
+  static String get baseUrl => kApiBaseUrl;
 
   /// TEMPORAL: Debug - obtiene todos los servicios del cliente
   static Future<Map<String, dynamic>> debugTodosLosServicios(String token) async {

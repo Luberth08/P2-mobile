@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class UserService {
-  static const String baseUrl = 'https://backend-repo-2ncr.onrender.com/api/v1';
+  static String get baseUrl => kApiBaseUrl;
 
   /// Obtiene la información del usuario actual incluyendo su rol
   static Future<Map<String, dynamic>?> obtenerInfoUsuario(String token) async {

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/tecnico_servicio.dart';
+import '../config.dart';
 
 class TecnicoApi {
-  static const String baseUrl = 'https://backend-repo-2ncr.onrender.com/api/v1';
+  static String get baseUrl => kApiBaseUrl;
 
   /// Obtiene los talleres donde el técnico puede trabajar
   static Future<List<TallerTecnicoInfo>> obtenerTalleres(String token) async {

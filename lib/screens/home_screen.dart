@@ -7,6 +7,7 @@ import 'profile_tab.dart';
 import 'create_diagnostic_screen.dart';
 import 'servicios_tab.dart';
 import 'tecnico_tab.dart';
+import 'cotizaciones_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -111,7 +112,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _tabTitles = [
         'Mi Perfil',
         'Solicitar Diagnóstico',
-        'Mis Servicios'
+        'Mis Servicios',
+        'Cotizaciones'
       ];
       
       _tabs = const [
@@ -127,12 +129,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           icon: Icon(Icons.build_circle),
           text: 'Servicios',
         ),
+        Tab(
+          icon: Icon(Icons.receipt_long),
+          text: 'Cotizaciones',
+        ),
       ];
       
       _tabViews = const [
         ProfileTab(),
         CreateDiagnosticScreen(),
         ServiciosTab(),
+        CotizacionesTab(),
       ];
     }
     

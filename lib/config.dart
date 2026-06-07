@@ -6,9 +6,7 @@
 
 const String kApiBaseUrl = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'http://localhost:8000/api/v1/'
-//  defaultValue: 'https://backend-repo-2ncr.onrender.com/api/v1/',
-//  defaultValue: 'https://p2-backend-617x.onrender.com/api/v1/',
+  defaultValue: 'http://localhost:8000/api/v1'
 );
 
 // Helper note:
@@ -16,3 +14,5 @@ const String kApiBaseUrl = String.fromEnvironment(
 // - iOS simulator: use http://localhost:8000
 // - Physical device: use host machine LAN IP, e.g. http://192.168.1.5:8000
 // - For production APK: use your deployed backend URL
+//  defaultValue: 'https://backend-repo-2ncr.onrender.com/api/v1/',
+//  defaultValue: 'https://p2-backend-617x.onrender.com/api/v1/',

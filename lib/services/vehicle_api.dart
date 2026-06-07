@@ -6,7 +6,7 @@ class VehicleApi {
   static String get baseUrl => kApiBaseUrl;
 
   static Future<Map<String, dynamic>> getVehicles(String token, {int skip = 0, int limit = 10}) async {
-    final url = Uri.parse('${baseUrl}vehiculos/?skip=$skip&limit=$limit');
+    final url = Uri.parse('$baseUrl/vehiculos/?skip=$skip&limit=$limit');
     final res = await http.get(
       url,
       headers: {
@@ -21,7 +21,7 @@ class VehicleApi {
   }
 
   static Future<Map<String, dynamic>> getVehicle(String token, int vehicleId) async {
-    final url = Uri.parse('${baseUrl}vehiculos/$vehicleId');
+    final url = Uri.parse('$baseUrl/vehiculos/$vehicleId');
     final res = await http.get(
       url,
       headers: {
@@ -36,7 +36,7 @@ class VehicleApi {
   }
 
   static Future<Map<String, dynamic>> createVehicle(String token, Map<String, dynamic> vehicleData) async {
-    final url = Uri.parse('${baseUrl}vehiculos/');
+    final url = Uri.parse('$baseUrl/vehiculos/');
     final res = await http.post(
       url,
       headers: {
@@ -52,7 +52,7 @@ class VehicleApi {
   }
 
   static Future<Map<String, dynamic>> updateVehicle(String token, int vehicleId, Map<String, dynamic> vehicleData) async {
-    final url = Uri.parse('${baseUrl}vehiculos/$vehicleId');
+    final url = Uri.parse('$baseUrl/vehiculos/$vehicleId');
     final res = await http.put(
       url,
       headers: {
@@ -68,7 +68,7 @@ class VehicleApi {
   }
 
   static Future<void> deleteVehicle(String token, int vehicleId) async {
-    final url = Uri.parse('${baseUrl}vehiculos/$vehicleId');
+    final url = Uri.parse('$baseUrl/vehiculos/$vehicleId');
     final res = await http.delete(
       url,
       headers: {

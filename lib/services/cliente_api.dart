@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config.dart';
 
 class ClienteApi {
-  static const String baseUrl = 'https://backend-repo-2ncr.onrender.com/api/v1';
+  static String get baseUrl => kApiBaseUrl;
 
   /// Obtiene el servicio actual en proceso del cliente con seguimiento completo
   static Future<ServicioSeguimientoCliente?> obtenerServicioActual(String token) async {

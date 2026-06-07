@@ -10,7 +10,7 @@ class ServiceRequestApi {
     String token,
     int diagnosticoId,
   ) async {
-    final url = Uri.parse('${baseUrl}servicios/$diagnosticoId/generar-solicitudes');
+    final url = Uri.parse('$baseUrl/servicios/$diagnosticoId/generar-solicitudes');
     final res = await http.post(
       url,
       headers: {
@@ -30,7 +30,7 @@ class ServiceRequestApi {
     String token,
     int diagnosticoId,
   ) async {
-    final url = Uri.parse('${baseUrl}servicios/$diagnosticoId/talleres-sugeridos');
+    final url = Uri.parse('$baseUrl/servicios/$diagnosticoId/talleres-sugeridos');
     final res = await http.get(
       url,
       headers: {
@@ -52,7 +52,7 @@ class ServiceRequestApi {
     int idTaller, {
     String? comentario,
   }) async {
-    final url = Uri.parse('${baseUrl}servicios/$diagnosticoId/solicitar-taller');
+    final url = Uri.parse('$baseUrl/servicios/$diagnosticoId/solicitar-taller');
     final res = await http.post(
       url,
       headers: {
@@ -76,7 +76,7 @@ class ServiceRequestApi {
     String token,
     int diagnosticoId,
   ) async {
-    final url = Uri.parse('${baseUrl}servicios/$diagnosticoId/solicitudes');
+    final url = Uri.parse('$baseUrl/servicios/$diagnosticoId/solicitudes');
     final res = await http.get(
       url,
       headers: {
@@ -96,7 +96,7 @@ class ServiceRequestApi {
     String token,
     int solicitudId,
   ) async {
-    final url = Uri.parse('${baseUrl}servicios/$solicitudId');
+    final url = Uri.parse('$baseUrl/servicios/$solicitudId');
     final res = await http.delete(
       url,
       headers: {
@@ -114,7 +114,7 @@ class ServiceRequestApi {
     int solicitudId,
     String comentario,
   ) async {
-    final url = Uri.parse('${baseUrl}servicios/$solicitudId/comentario');
+    final url = Uri.parse('$baseUrl/servicios/$solicitudId/comentario');
     final res = await http.patch(
       url,
       headers: {
@@ -137,7 +137,7 @@ class ServiceRequestApi {
     String token,
     int tallerId,
   ) async {
-    final url = Uri.parse('${baseUrl}servicios/taller/$tallerId/ubicacion');
+    final url = Uri.parse('$baseUrl/servicios/taller/$tallerId/ubicacion');
     final res = await http.get(
       url,
       headers: {

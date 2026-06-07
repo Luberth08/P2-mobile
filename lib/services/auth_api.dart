@@ -7,7 +7,7 @@ class AuthApi {
   static String get baseUrl => kApiBaseUrl;
 
   static Future<Map<String, dynamic>> checkEmail(String email) async {
-    final url = Uri.parse('${baseUrl}auth/mobile/check-email');
+    final url = Uri.parse('$baseUrl/auth/mobile/check-email');
     final res = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -20,7 +20,7 @@ class AuthApi {
   }
 
   static Future<void> requestOtp(String email) async {
-    final url = Uri.parse('${baseUrl}auth/mobile/request-otp');
+    final url = Uri.parse('$baseUrl/auth/mobile/request-otp');
     final res = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -31,7 +31,7 @@ class AuthApi {
   }
 
   static Future<void> register(String email) async {
-    final url = Uri.parse('${baseUrl}auth/mobile/register');
+    final url = Uri.parse('$baseUrl/auth/mobile/register');
     final res = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -42,7 +42,7 @@ class AuthApi {
   }
 
   static Future<String> verifyOtp(String email, String code, {String? fcmToken}) async {
-    final url = Uri.parse('${baseUrl}auth/mobile/verify-otp');
+    final url = Uri.parse('$baseUrl/auth/mobile/verify-otp');
     final body = {'email': email, 'code': code};
     if (fcmToken != null) body['fcm_token'] = fcmToken;
     final res = await http.post(
@@ -58,7 +58,7 @@ class AuthApi {
   }
 
   static Future<String> login(String email, String password, {String? fcmToken}) async {
-    final url = Uri.parse('${baseUrl}auth/mobile/login');
+    final url = Uri.parse('$baseUrl/auth/mobile/login');
     final body = {'email': email, 'password': password};
     if (fcmToken != null) body['fcm_token'] = fcmToken;
     final res = await http.post(
@@ -74,7 +74,7 @@ class AuthApi {
   }
 
   static Future<void> logout(String token) async {
-    final url = Uri.parse('${baseUrl}auth/mobile/logout');
+    final url = Uri.parse('$baseUrl/auth/mobile/logout');
     final res = await http.post(
       url,
       headers: {'Authorization': 'Bearer $token'},

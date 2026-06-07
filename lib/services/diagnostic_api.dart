@@ -21,7 +21,7 @@ class DiagnosticApi {
     List<File>? fotos,
     File? audio,
   }) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/');
+    final url = Uri.parse('$baseUrl/diagnosticos/');
     final request = http.MultipartRequest('POST', url);
     
     request.headers['Authorization'] = 'Bearer $token';
@@ -67,7 +67,7 @@ class DiagnosticApi {
 
   /// Obtiene las solicitudes de diagnóstico del usuario
   static Future<List<Map<String, dynamic>>> getMySolicitudes(String token) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/mis-solicitudes');
+    final url = Uri.parse('$baseUrl/diagnosticos/mis-solicitudes');
     final res = await http.get(
       url,
       headers: {
@@ -84,7 +84,7 @@ class DiagnosticApi {
 
   /// Obtiene una solicitud específica
   static Future<Map<String, dynamic>> getSolicitud(String token, int solicitudId) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/$solicitudId');
+    final url = Uri.parse('$baseUrl/diagnosticos/$solicitudId');
     final res = await http.get(
       url,
       headers: {
@@ -101,7 +101,7 @@ class DiagnosticApi {
 
   /// Lista todos los tipos de incidentes disponibles
   static Future<List<Map<String, dynamic>>> getTiposIncidentes(String token) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/tipos-incidentes');
+    final url = Uri.parse('$baseUrl/diagnosticos/tipos-incidentes');
     final res = await http.get(
       url,
       headers: {
@@ -122,7 +122,7 @@ class DiagnosticApi {
     int solicitudId,
     int idTipoIncidente,
   ) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/$solicitudId/asociar-tipo');
+    final url = Uri.parse('$baseUrl/diagnosticos/$solicitudId/asociar-tipo');
     final res = await http.post(
       url,
       headers: {
@@ -143,7 +143,7 @@ class DiagnosticApi {
     int idDiagnostico,
     int idTipoIncidente,
   ) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/$solicitudId/incidentes/$idDiagnostico/$idTipoIncidente');
+    final url = Uri.parse('$baseUrl/diagnosticos/$solicitudId/incidentes/$idDiagnostico/$idTipoIncidente');
     final res = await http.delete(
       url,
       headers: {
@@ -157,7 +157,7 @@ class DiagnosticApi {
 
   /// Cancela una solicitud
   static Future<void> cancelarSolicitud(String token, int solicitudId) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/$solicitudId/cancel');
+    final url = Uri.parse('$baseUrl/diagnosticos/$solicitudId/cancel');
     final res = await http.post(
       url,
       headers: {
@@ -174,7 +174,7 @@ class DiagnosticApi {
     String token,
     int solicitudId,
   ) async {
-    final url = Uri.parse('${baseUrl}diagnosticos/$solicitudId/reintentar');
+    final url = Uri.parse('$baseUrl/diagnosticos/$solicitudId/reintentar');
     final res = await http.post(
       url,
       headers: {

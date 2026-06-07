@@ -6,7 +6,7 @@ class ProfileApi {
   static String get baseUrl => kApiBaseUrl;
 
   static Future<Map<String, dynamic>> getProfile(String token) async {
-    final url = Uri.parse('${baseUrl}perfil/me');
+    final url = Uri.parse('$baseUrl/perfil/me');
     final res = await http.get(
       url,
       headers: {
@@ -21,7 +21,7 @@ class ProfileApi {
   }
 
   static Future<Map<String, dynamic>> updateProfile(String token, Map<String, dynamic> data) async {
-    final url = Uri.parse('${baseUrl}perfil/me');
+    final url = Uri.parse('$baseUrl/perfil/me');
     final res = await http.put(
       url,
       headers: {
@@ -37,7 +37,7 @@ class ProfileApi {
   }
 
   static Future<Map<String, dynamic>> createUsuario(String token, String username, String password) async {
-    final url = Uri.parse('${baseUrl}perfil/create-usuario');
+    final url = Uri.parse('$baseUrl/perfil/create-usuario');
     final res = await http.post(
       url,
       headers: {
@@ -56,7 +56,7 @@ class ProfileApi {
   }
 
   static Future<void> requestPasswordChange(String email) async {
-    final url = Uri.parse('${baseUrl}perfil/request-password-change');
+    final url = Uri.parse('$baseUrl/perfil/request-password-change');
     final res = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -67,7 +67,7 @@ class ProfileApi {
   }
 
   static Future<void> changePassword(String email, String code, String newPassword) async {
-    final url = Uri.parse('${baseUrl}perfil/change-password');
+    final url = Uri.parse('$baseUrl/perfil/change-password');
     final res = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -82,7 +82,7 @@ class ProfileApi {
   }
 
   static Future<String> uploadPhoto(String token, List<int> imageBytes, String filename) async {
-    final url = Uri.parse('${baseUrl}perfil/upload-photo');
+    final url = Uri.parse('$baseUrl/perfil/upload-photo');
     final request = http.MultipartRequest('POST', url);
     request.headers['Authorization'] = 'Bearer $token';
     request.files.add(
@@ -104,7 +104,7 @@ class ProfileApi {
   }
 
   static Future<void> deletePhoto(String token) async {
-    final url = Uri.parse('${baseUrl}perfil/photo');
+    final url = Uri.parse('$baseUrl/perfil/photo');
     final res = await http.delete(
       url,
       headers: {

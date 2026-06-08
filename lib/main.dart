@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'services/notification_service.dart';
+import 'services/sync_service.dart';
+import 'services/connectivity_service.dart';
 import 'screens/email_login_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/password_login_screen.dart';
@@ -14,6 +16,10 @@ void main() async {
   
   // Inicializar notificaciones
   await NotificationService.initialize();
+  
+  // Inicializar servicios de sincronización offline
+  await ConnectivityService().init();
+  await SyncService().init();
   
   runApp(const MyApp());
 }

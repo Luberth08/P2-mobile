@@ -187,6 +187,54 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
     }
   }
 
+  Future<void> _cancelarServicio(int servicioId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar servicio'),
+        content: const Text('¿Estás seguro de que deseas cancelar este servicio? Esto liberará a los técnicos y vehículos asignados.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sí, cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final token = await Session.getToken();
+        if (token != null) {
+          await ClienteApi.cancelarServicio(token, servicioId);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Servicio cancelado exitosamente'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _loadAllData();
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cancelar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Color _getEstadoColor(String estado) {
     switch (estado) {
       case 'pendiente':
@@ -366,6 +414,10 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
     
     final servicio = _servicioActual!;
     
+    // Estados en los que se puede cancelar el servicio
+    final estadosCancelables = ['creado', 'tecnico_asignado', 'en_camino', 'en_lugar', 'en_atencion'];
+    final canCancel = estadosCancelables.contains(servicio.estado);
+    
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -531,6 +583,27 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ],
+                
+                // Botón de cancelar servicio
+                if (canCancel) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _cancelarServicio(servicio.id),
+                      icon: const Icon(Icons.cancel, size: 18),
+                      label: const Text('Cancelar servicio'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF932D30),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -707,6 +780,7 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
     final fechaCreacion = solicitud['fecha_creacion'] ?? '';
     final vehiculo = solicitud['vehiculo'];
     final diagnostico = solicitud['diagnostico'];
+    final canCancel = estado == 'pendiente';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -818,11 +892,80 @@ class _ServiciosTabState extends State<ServiciosTab> with SingleTickerProviderSt
                   ),
                 ),
               ],
+
+              // Botón de cancelar (solo para solicitudes pendientes)
+              if (canCancel) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _cancelarSolicitud(solicitud['id']),
+                    icon: const Icon(Icons.cancel, size: 18),
+                    label: const Text('Cancelar solicitud'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _cancelarSolicitud(int solicitudId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar solicitud'),
+        content: const Text('¿Estás seguro de que deseas cancelar esta solicitud?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sí, cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final token = await Session.getToken();
+        if (token != null) {
+          await DiagnosticApi.cancelarSolicitud(token, solicitudId);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Solicitud cancelada exitosamente'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _loadSolicitudes();
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cancelar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildHistorialCard(ServicioHistorial servicio) {

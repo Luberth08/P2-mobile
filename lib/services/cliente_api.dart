@@ -150,6 +150,30 @@ class ClienteApi {
       rethrow;
     }
   }
+
+  /// Cancela un servicio activo del cliente
+  static Future<void> cancelarServicio(
+    String token,
+    int servicioId,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/cliente/servicio/$servicioId/cancelar'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 204) {
+        final error = json.decode(utf8.decode(response.bodyBytes));
+        throw Exception(error['detail'] ?? 'Error al cancelar servicio');
+      }
+    } catch (e) {
+      print('Error en cancelarServicio: $e');
+      rethrow;
+    }
+  }
 }
 
 // ============================================================

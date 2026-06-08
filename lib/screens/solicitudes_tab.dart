@@ -73,6 +73,54 @@ class _SolicitudesTabState extends State<SolicitudesTab> {
     }
   }
 
+  Future<void> _cancelarSolicitud(int solicitudId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar solicitud'),
+        content: const Text('¿Estás seguro de que deseas cancelar esta solicitud?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sí, cancelar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final token = await Session.getToken();
+        if (token != null) {
+          await DiagnosticApi.cancelarSolicitud(token, solicitudId);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Solicitud cancelada exitosamente'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            _loadSolicitudes();
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al cancelar: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Color _getEstadoColor(String estado) {
     switch (estado) {
       case 'pendiente':
@@ -188,6 +236,7 @@ class _SolicitudesTabState extends State<SolicitudesTab> {
     final fechaCreacion = solicitud['fecha_creacion'] ?? '';
     final vehiculo = solicitud['vehiculo'];
     final diagnostico = solicitud['diagnostico'];
+    final canCancel = estado == 'pendiente';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -303,6 +352,27 @@ class _SolicitudesTabState extends State<SolicitudesTab> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+              ],
+
+              // Botón de cancelar (solo para solicitudes pendientes)
+              if (canCancel) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _cancelarSolicitud(solicitud['id']),
+                    icon: const Icon(Icons.cancel, size: 18),
+                    label: const Text('Cancelar solicitud'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
                 ),
               ],

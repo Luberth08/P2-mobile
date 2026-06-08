@@ -26,12 +26,22 @@ class WebSocketService {
   bool _isConnected = false;
   bool get isConnected => _isConnected;
 
+  // Reconexión automática
+  int _reconnectAttempts = 0;
+  final int _maxReconnectAttempts = 5;
+  final int _reconnectDelay = 3000; // ms
+  Timer? _reconnectTimer;
+  int? _lastServiceId;
+
   /// Conecta al servidor WebSocket
   Future<void> connect({int? servicioId}) async {
     if (_isConnected) {
       print('WebSocket ya está conectado');
       return;
     }
+
+    // Guardar servicioId para reconexión
+    _lastServiceId = servicioId;
 
     final token = await _storage.read(key: 'token');
     if (token == null) {
@@ -74,18 +84,22 @@ class WebSocketService {
         onError: (error) {
           print('Error WebSocket: $error');
           _errorController.add(error.toString());
+          _scheduleReconnect();
         },
         onDone: () {
           print('WebSocket cerrado');
           _isConnected = false;
           _connectionController.add(false);
           _channel = null;
+          // Intentar reconectar automáticamente
+          _scheduleReconnect();
         },
         cancelOnError: false,
       );
 
       _isConnected = true;
       _connectionController.add(true);
+      _reconnectAttempts = 0; // Reset intentos al conectar exitosamente
       print('WebSocket conectado exitosamente');
     } catch (e) {
       print('Error creando WebSocket: $e');
@@ -98,10 +112,35 @@ class WebSocketService {
   /// Desconecta del servidor WebSocket
   void disconnect() {
     print('Desconectando WebSocket...');
+    
+    // Cancelar timer de reconexión si existe
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+    _reconnectAttempts = 0;
+    
     _channel?.sink.close();
     _channel = null;
     _isConnected = false;
     _connectionController.add(false);
+  }
+
+  /// Programa una reconexión automática con exponential backoff
+  void _scheduleReconnect() {
+    if (_reconnectAttempts >= _maxReconnectAttempts) {
+      print('❌ Máximo de intentos de reconexión alcanzado ($_maxReconnectAttempts)');
+      return;
+    }
+
+    _reconnectAttempts++;
+    final delay = _reconnectDelay * _reconnectAttempts; // Exponential backoff
+
+    print('🔄 Intentando reconectar en ${delay}ms (intentos: $_reconnectAttempts/$_maxReconnectAttempts)');
+
+    _reconnectTimer?.cancel();
+    _reconnectTimer = Timer(Duration(milliseconds: delay), () {
+      print('⏰ Ejecutando reconexión automática...');
+      connect(servicioId: _lastServiceId);
+    });
   }
 
   /// Envía un mensaje al servidor WebSocket
@@ -150,6 +189,7 @@ class WebSocketService {
 
   /// Limpia recursos
   void dispose() {
+    _reconnectTimer?.cancel();
     disconnect();
     _messageController.close();
     _connectionController.close();
